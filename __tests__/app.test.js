@@ -3,6 +3,7 @@ const { articleData, commentData, topicData, userData } = require("../db/data/te
 const db = require("../db/connection");
 const request = require("supertest");
 const app = require("../db/app");
+require('jest-sorted');
 
 beforeAll(() => {
   return seed({ articleData, commentData, topicData, userData });
@@ -76,3 +77,44 @@ describe('GET: /api/topics', () => {
             });
         });
       });
+
+      describe('GET: /api/articles', () => {
+    it('status: 200, responds with a json object containing a key of `articles` with a value of an array of all the article objects', () => {
+        return request(app)
+        .get('/api/articles')
+        .expect(200)
+        .then((res) => {
+            expect(res.body).toHaveProperty('articles')
+            expect(Array.isArray(res.body.articles)).toBe(true)
+            expect(res.body.articles).toHaveLength(12)
+            res.body.articles.forEach((article) => {
+                expect(article).toHaveProperty('title')
+                expect(article).toHaveProperty('topic')
+                expect(article).toHaveProperty('author')
+                expect(article).toHaveProperty('created_at')
+                expect(article).toHaveProperty('article_img_url')
+                expect(article).toHaveProperty('comment_count')
+                expect(article).toHaveProperty('article_id')
+                })
+            })
+        })
+        it('status: 200, articles should be sorted by date in descending order', () => {
+          return request(app)
+          .get('/api/articles')
+          .expect(200)
+          .then((res) => {
+            const articles = res.body.articles;
+            expect(articles).toBeSortedBy('created_at', {
+              descending: true,
+            });
+              })
+          })
+        it('status:404, responds with an error message when passed a path that does not exist', () => {
+            return request(app)
+              .get('/api/artiicles')
+              .expect(404)
+              .then(({ body }) => {
+                expect(body.msg).toBe('Path not found');
+              });
+          })
+    })
