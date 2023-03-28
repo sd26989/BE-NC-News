@@ -76,3 +76,64 @@ describe('GET: /api/topics', () => {
             });
         });
       });
+
+      describe.only('GET: /api/articles', () => {
+    it('status: 200, responds with a json object containing a key of `articles` with a value of an array of all the article objects', () => {
+        return request(app)
+        .get('/api/articles')
+        .expect(200)
+        .then((res) => {
+            expect(res.body).toHaveProperty('articles')
+            expect(Array.isArray(res.body.articles)).toBe(true)
+            expect(res.body.articles).toHaveLength(12)
+            res.body.articles.forEach((article) => {
+                expect(article).toHaveProperty('title')
+                expect(article).toHaveProperty('topic')
+                expect(article).toHaveProperty('author')
+                expect(article).toHaveProperty('body')
+                expect(article).toHaveProperty('created_at')
+                expect(article).toHaveProperty('article_img_url')
+                expect(article).toHaveProperty('comment_count')
+                expect(article).toHaveProperty('article_id')
+                })
+            })
+        })
+        it('status: 200, articles should be sorted by date in descending order', () => {
+          return request(app)
+          .get('/api/articles')
+          .expect(200)
+          .then((res) => {
+            const articles = res.body.articles;
+                  expect(articles[0]).toEqual({
+                    article_id: 3,
+                    title: 'Eight pug gifs that remind me of mitch',
+                    topic: 'mitch',
+                    author: 'icellusedkars',
+                    body: 'some gifs',
+                    created_at: '2020-11-03T09:12:00.000Z',
+                    votes: 0,
+                    article_img_url: 'https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700',
+                    comment_count: '2'
+                  })
+                  expect(articles[11]).toEqual({
+                    article_id: 7,
+                    title: 'Z',
+                    topic: 'mitch',
+                    author: 'icellusedkars',
+                    body: 'I was hungry.',
+                    created_at: '2020-01-07T14:08:00.000Z',
+                    votes: 0,
+                    article_img_url: 'https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700',
+                    comment_count: '0'
+                  })
+              })
+          })
+        it('status:404, responds with an error message when passed a path that does not exist', () => {
+            return request(app)
+              .get('/api/artiicles')
+              .expect(404)
+              .then(({ body }) => {
+                expect(body.msg).toBe('Path not found');
+              });
+          })
+    })
