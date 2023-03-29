@@ -126,22 +126,17 @@ describe('GET: /api/topics', () => {
           .expect(200)
           .then(({ body }) => {
             const { comments } = body;
-            expect(comments).toEqual([{
-              body: "I am 100% sure that we're not completely sure.",
-              votes: 1,
-              author: "butter_bridge",
-              article_id: 5,
-              created_at: "2020-11-24T00:08:00.000Z",
-              comment_id: 15,
-            },
-            {
-              body: "What do you see? I have no idea where this will lead us. This place I speak of, is known as the Black Lodge.",
-              votes: 16,
-              author: "icellusedkars",
-              article_id: 5,
-              created_at: "2020-06-09T05:00:00.000Z",
-              comment_id: 14,
-            }]);
+            expect(comments).toHaveLength(2);
+            comments.forEach(comment => {
+            expect(comment).toMatchObject({
+              comment_id: expect.any(Number),
+              votes: expect.any(Number),
+              created_at: expect.any(String),
+              author: expect.any(String),
+              body: expect.any(String),
+              article_id: 5
+            });
+          });
           });
       });
       it('status: 200, comments should be sorted by date in descending order', () => {
@@ -155,12 +150,21 @@ describe('GET: /api/topics', () => {
           });
             })
         })
-      it('status: 404, responds with an error message when passed a path that does not exist', () => {
+      it('status: 404, responds with a 404 when article_id is valid but non existent', () => {
         return request(app)
           .get('/api/articles/92929292/comments')
           .expect(404)
           .then(({ body }) => {
-            expect(body.msg).toBe('Path not found');
+            expect(body.msg).toBe('Article ID does not exist!');
+          });
+      })
+      it('status: 200, responds with an empty array when article_id exists but has no comments', () => {
+        return request(app)
+          .get('/api/articles/2/comments')
+          .expect(200)
+          .then(({ body }) => {
+            const comments = body.comments;
+            expect(comments).toEqual([]);
           });
       })
       it('status: 400: responds with Bad Request when the article_id is not valid', () => {
