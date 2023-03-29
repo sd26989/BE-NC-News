@@ -118,3 +118,58 @@ describe('GET: /api/topics', () => {
               });
           })
     })
+
+    describe("GET /api/articles/:article_id/comments", () => {
+      it("200: responds with an array of comments for the given article_id", () => {
+        return request(app)
+          .get("/api/articles/5/comments")
+          .expect(200)
+          .then(({ body }) => {
+            const { comments } = body;
+            expect(comments).toEqual([{
+              body: "I am 100% sure that we're not completely sure.",
+              votes: 1,
+              author: "butter_bridge",
+              article_id: 5,
+              created_at: "2020-11-24T00:08:00.000Z",
+              comment_id: 15,
+            },
+            {
+              body: "What do you see? I have no idea where this will lead us. This place I speak of, is known as the Black Lodge.",
+              votes: 16,
+              author: "icellusedkars",
+              article_id: 5,
+              created_at: "2020-06-09T05:00:00.000Z",
+              comment_id: 14,
+            }]);
+          });
+      });
+      it('status: 200, comments should be sorted by date in descending order', () => {
+        return request(app)
+        .get('/api/articles/1/comments')
+        .expect(200)
+        .then((res) => {
+          const comments = res.body.comments;
+          expect(comments).toBeSortedBy('created_at', {
+            descending: true,
+          });
+            })
+        })
+      it('status: 404, responds with an error message when passed a path that does not exist', () => {
+        return request(app)
+          .get('/api/articles/92929292/comments')
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).toBe('Path not found');
+          });
+      })
+      it('status: 400: responds with Bad Request when the article_id is not valid', () => {
+        return request(app)
+          .get("/api/articles/seven/comments")
+          .expect(400)
+          .then(({ body }) => {
+            const { msg } = body;
+            expect(msg).toBe("Invalid input");
+          });
+      });
+    });
