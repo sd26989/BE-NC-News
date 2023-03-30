@@ -15,3 +15,11 @@ exports.fetchCommentsByArticleId = (article_id) => {
         }
       })
     }
+
+    exports.postComment = (article_id, comment) => {
+      return db.query(`INSERT INTO comments (body, author, article_id) VALUES ($1, $2, $3) RETURNING *;`
+      ,[comment.body, comment.username, article_id])
+      .then((result) => {
+      return result.rows[0];
+    })
+    };
