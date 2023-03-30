@@ -177,3 +177,106 @@ describe('GET: /api/topics', () => {
           });
       });
     });
+
+    describe('POST /api/articles/:article_id/comments', () => {
+      it('status 201: Posts comment to corresponding article and responds with comment', () => {
+        const testComment = {
+          username: 'butter_bridge',
+          body: 'Hello!',
+        };
+        return request(app)
+          .post('/api/articles/1/comments')
+          .send(testComment)
+          .expect(201)
+          .then(({ body }) => {
+            const { comment } = body;
+            expect(comment).toMatchObject({
+              comment_id: 19,
+              votes: 0,
+              created_at: expect.any(String),
+              author: 'butter_bridge',
+              body: 'Hello!',
+              article_id: 1,
+            });
+          });
+      })
+    it("status: 400, responds with error message when request is sent with empty object", () => {
+      const testComment = {}
+        return request(app)
+        .post("/api/articles/1/comments")
+        .send(testComment)
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("No comment body provided");
+        })
+    })
+    it("status: 400, responds with error message when request is sent without body", () => {
+      const testComment = {
+        username: "butter_bridge", 
+      }
+        return request(app)
+        .post("/api/articles/1/comments")
+        .send(testComment)
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("No comment body provided");
+        })
+    })
+    it("status: 404, responds with error message when request is sent with invalid username", () => {
+      const testComment = {
+        username: "Nigel10",
+        body: "Hello!"
+      }
+        return request(app)
+        .post("/api/articles/1/comments")
+        .send(testComment)
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Path not found");
+        })
+    })
+    it("status: 404, responds with error message if article_id is valid but does not exist", () => {
+      const testComment = {
+        username: "butter_bridge",
+        body: "Hello!"
+      };
+      return request(app)
+        .post("/api/articles/929292/comments")
+        .send(testComment)
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Path not found");
+        });
+    })
+    it("status: 201, ignores extra properties", () => {
+      const testComment = {
+        username: "butter_bridge",
+        body: "Hello!",
+        timePosted: "10 am"
+      };
+      return request(app)
+        .post("/api/articles/1/comments")
+        .send(testComment)
+        .expect(201)
+        .then(({ body }) => {
+          const { comment } = body;
+          expect(comment).toMatchObject({
+            comment_id: expect.any(Number),
+            body: "Hello!",
+            author: "butter_bridge",
+            article_id: 1,
+            votes: expect.any(Number),
+            created_at: expect.any(String)
+          });
+        });
+    });
+    it('status: 400: responds with error when the article_id is not valid', () => {
+      return request(app)
+        .post("/api/articles/seven/comments")
+        .expect(400)
+        .then(({ body }) => {
+          const { msg } = body;
+          expect(msg).toBe("Invalid input");
+        });
+    });
+  });
