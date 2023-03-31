@@ -60,9 +60,12 @@ exports.updateVotes = (article_id, inc_votes) => {
 };
 
 exports.checkTopicExists = (topic) => {
-  return db.query(`SELECT * FROM topics WHERE slug = $1;`, [topic]).then((result) => {
-    if (result.rowCount === 0) {
-      return Promise.reject({ status: 404, msg: `Topic does not exist`});}
-    return result.rows;
-  });
-}
+  return db.query(`SELECT * FROM topics WHERE slug = $1;`, [topic])
+    .then((result) => {
+      if (result.rowCount === 0) {
+        return false;
+      } else {
+        return true;
+      }
+    });
+};

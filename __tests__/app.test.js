@@ -514,4 +514,22 @@ describe("DELETE /api/comments/:comment_id", () => {
           expect(msg).toBe("Invalid sort query");
         });
     });
+    it("status: 400, responds with error when order query does not exist", () => {
+      return request(app)
+        .get("/api/articles?order=aaaaasc")
+        .expect(400)
+        .then(({ body }) => {
+          const { msg } = body;
+          expect(msg).toBe("Invalid order query");
+        });
+    });
+    it("status: 200, responds with empty array when topic exists but there are no articles on the topic", () => {
+      return request(app)
+        .get("/api/articles?topic=paper")
+        .expect(200)
+        .then(({ body }) => {
+          const { articles } = body;
+          expect(articles).toEqual([]);
+        });
+    });
   });
