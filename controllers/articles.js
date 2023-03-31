@@ -1,5 +1,5 @@
 const app = require("../db/app");
-const { fetchArticleById, fetchArticles, updateVotes} = require('../models/articles')
+const { fetchArticleById, fetchArticles, updateVotes, checkTopicExists} = require('../models/articles')
 
 exports.getArticleById = (req, res, next) => {
     const { article_id } = req.params;
@@ -13,9 +13,14 @@ exports.getArticleById = (req, res, next) => {
 }
 
 exports.getArticles = (req, res, next) => {
-    fetchArticles().then((rows) =>{
+    const { sort_by = "created_at", order = "desc", topic } = req.query;
+
+    fetchArticles(sort_by, order, topic).then((rows) =>{
         const articles = rows;
-        res.status(200).send({ articles })
+        if (articles.length === 0) {
+            return checkTopicExists(topic);
+          }
+        res.status(200).send( {articles} )
     })
     .catch((err) => {
         next(err)

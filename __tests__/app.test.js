@@ -409,3 +409,109 @@ describe("DELETE /api/comments/:comment_id", () => {
         });
     });
   });
+
+  describe("GET: /api/articles (queries)", () => {
+    it("status: 200, responds with articles ifiltered by topic value query", () => {
+      return request(app)
+        .get("/api/articles?topic=cats")
+        .expect(200)
+        .then(({ body }) => {
+          const { articles } = body;
+          expect(articles.length).toBe(1);
+            expect(articles).toMatchObject([{
+              author: expect.any(String),
+              title: expect.any(String),
+              article_id: expect.any(Number),
+              topic: "cats",
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              article_img_url: expect.any(String),
+              comment_count: expect.any(String),
+            }]);
+        });
+    });
+    it("status: 200, responds with articles sorted by given column in descending order", () => {
+      return request(app)
+        .get("/api/articles?sort_by=title")
+        .expect(200)
+        .then(({ body }) => {
+          const { articles } = body;
+          expect(articles.length).toBe(12);
+          expect(articles).toBeSortedBy("title", { descending: true });
+          articles.forEach((article) => {
+            expect(article).toMatchObject({
+              author: expect.any(String),
+              title: expect.any(String),
+              article_id: expect.any(Number),
+              topic: expect.any(String),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              article_img_url: expect.any(String),
+              comment_count: expect.any(String),
+            });
+          });
+        });
+    });
+    it("status: 200, responds with articles sorted by given column in descending order", () => {
+      return request(app)
+        .get("/api/articles?sort_by=title&order=asc")
+        .expect(200)
+        .then(({ body }) => {
+          const { articles } = body;
+          expect(articles.length).toBe(12);
+          expect(articles).toBeSortedBy("title", { ascending: true });
+          articles.forEach((article) => {
+            expect(article).toMatchObject({
+              author: expect.any(String),
+              title: expect.any(String),
+              article_id: expect.any(Number),
+              topic: expect.any(String),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              article_img_url: expect.any(String),
+              comment_count: expect.any(String),
+            });
+          });
+        });
+    });
+    it("status: 200, responds with articles filtered by topic and sorted by column in ascending order", () => {
+      return request(app)
+        .get("/api/articles?topic=mitch&sort_by=title&order=asc")
+        .expect(200)
+        .then(({ body }) => {
+          const { articles } = body;
+          expect(articles.length).toBe(11);
+          expect(articles).toBeSortedBy("title", { ascending: true });
+          articles.forEach((article) => {
+            expect(article).toMatchObject({
+              author: expect.any(String),
+              title: expect.any(String),
+              article_id: expect.any(Number),
+              topic: "mitch",
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              article_img_url: expect.any(String),
+              comment_count: expect.any(String),
+            });
+          });
+        });
+    });
+    it("status: 404, responds with error when topic query does not exist", () => {
+      return request(app)
+        .get("/api/articles?topic=dogs")
+        .expect(404)
+        .then(({ body }) => {
+          const { msg } = body;
+          expect(msg).toBe("Topic does not exist");
+        });
+    });
+    it("status: 400, responds with error when sort_by query does not exist", () => {
+      return request(app)
+        .get("/api/articles?sort_by=language")
+        .expect(400)
+        .then(({ body }) => {
+          const { msg } = body;
+          expect(msg).toBe("Invalid sort query");
+        });
+    });
+  });
