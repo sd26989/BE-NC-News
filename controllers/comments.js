@@ -1,5 +1,5 @@
 const app = require("../db/app");
-const { fetchCommentsByArticleId, checkArticleExists, postComment } = require('../models/comments')
+const { fetchCommentsByArticleId, checkArticleExists, postComment, removeComment } = require('../models/comments')
 
 exports.getCommentsByArticleId = (req, res, next) => {
     const { article_id } = req.params;
@@ -17,6 +17,16 @@ exports.getCommentsByArticleId = (req, res, next) => {
     const comment = req.body;
     postComment(article_id, comment).then(comment => {
       res.status(201).send({comment});
+    })
+    .catch((err) => {
+        next(err)
+    })
+  }
+
+  exports.deleteCommentById = (req, res, next) => {
+    const {comment_id} = req.params;
+    removeComment(comment_id).then(comment => {
+      res.status(204).send();
     })
     .catch((err) => {
         next(err)
