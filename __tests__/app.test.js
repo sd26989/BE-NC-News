@@ -383,3 +383,29 @@ describe("DELETE /api/comments/:comment_id", () => {
         });
     });
   });
+
+  describe("GET: /api/users", () => {
+    it("status: 200, responds with a json object containing a key of `users` with a value of an array of all the user objects", () => {
+      return request(app)
+        .get("/api/users")
+        .expect(200)
+        .then((res) => {
+          expect(res.body).toHaveProperty("users");
+          expect(Array.isArray(res.body.users)).toBe(true);
+          expect(res.body.users).toHaveLength(4);
+          res.body.users.forEach((user) => {
+            expect(user).toHaveProperty("username");
+            expect(user).toHaveProperty("name");
+            expect(user).toHaveProperty("avatar_url");
+          });
+        });
+    });
+    it("status:404, responds with an error message when passed a path that does not exist", () => {
+      return request(app)
+        .get("/api/usersssss")
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Path not found");
+        });
+    });
+  });
