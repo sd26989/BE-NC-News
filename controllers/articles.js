@@ -1,5 +1,5 @@
 const app = require("../db/app");
-const { fetchArticleById, fetchArticles, } = require('../models/articles')
+const { fetchArticleById, fetchArticles, updateVotes} = require('../models/articles')
 
 exports.getArticleById = (req, res, next) => {
     const { article_id } = req.params;
@@ -21,3 +21,14 @@ exports.getArticles = (req, res, next) => {
         next(err)
     })
 };
+
+exports.patchVotes = (req, res, next) => {
+    const { article_id } = req.params;
+    const { inc_votes } = req.body;
+    updateVotes(article_id, inc_votes).then((article) => {
+      res.status(200).send({article});
+    })
+    .catch((err) => {
+      next(err);
+    })
+  };
