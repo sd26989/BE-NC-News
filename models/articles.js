@@ -1,18 +1,25 @@
 const db = require("../db/connection");
 
 exports.fetchArticleById = (article_id) => {
-  return db.query(`SELECT * FROM articles WHERE article_id = $1;`, [article_id])
-    .then(({ rows }) => {
-      const article = rows[0];
-      if (!article) {
+  return db
+    .query(
+      `SELECT articles.author, articles.body, title, articles.article_id, topic, articles.created_at, articles.votes, article_img_url, COUNT(comments.comment_id) AS comment_count 
+        FROM articles 
+        LEFT JOIN comments ON articles.article_id = comments.article_id 
+        WHERE articles.article_id = $1 GROUP BY articles.article_id `,
+      [article_id]
+    )
+    .then((data) => {
+      if (data.rowCount === 0) {
         return Promise.reject({
           status: 404,
-          msg: 'Path not found',
+          msg: "Path not found",
         });
+      } else {
+        return data.rows[0];
       }
-      return article;
-    })
-}
+    });
+};
 
 exports.fetchArticles = (sort_by, order, topic) => {
   const queryValues = [];
